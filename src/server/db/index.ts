@@ -1,16 +1,16 @@
-import Database from 'better-sqlite3'
-import { drizzle } from 'drizzle-orm/better-sqlite3'
-import { existsSync, mkdirSync } from 'node:fs'
-import path from 'node:path'
-import { homedir } from 'node:os'
-import { randomBytes } from 'node:crypto'
-import { allowedUsers, projects, sessions, settings, userSessions, users } from './schema'
+import { drizzle } from 'drizzle-orm/node-sqlite'
 import { eq } from 'drizzle-orm'
+import { randomBytes } from 'node:crypto'
+import { existsSync, mkdirSync } from 'node:fs'
+import { homedir } from 'node:os'
+import path from 'node:path'
+import { DatabaseSync } from 'node:sqlite'
+import { allowedUsers, projects, sessions, settings, userSessions, users } from './schema'
 
 const DEFAULT_DB_DIR = path.join(homedir(), '.lux')
 const DEFAULT_DB_PATH = path.join(DEFAULT_DB_DIR, 'lux.db')
 
-let sqlite: Database.Database | null = null
+let sqlite: DatabaseSync | null = null
 let db: ReturnType<typeof drizzle> | null = null
 
 export function getDb() {
@@ -35,8 +35,8 @@ export function initDb() {
     mkdirSync(dir, { recursive: true })
   }
 
-  sqlite = new Database(dbPath)
-  sqlite.pragma('foreign_keys = ON')
+  sqlite = new DatabaseSync(dbPath)
+  sqlite.exec('PRAGMA foreign_keys = ON')
 
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS allowed_users (
@@ -104,7 +104,8 @@ export function initDb() {
     sqlite.exec('ALTER TABLE projects ADD COLUMN icon TEXT')
   }
 
-  db = drizzle(sqlite, {
+  db = drizzle({
+    client: sqlite,
     schema: { allowedUsers, users, userSessions, settings, projects, sessions }
   })
 
