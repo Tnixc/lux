@@ -2,10 +2,13 @@ import { defineNitroConfig } from 'nitro/config'
 import { cpSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 
+const isVitest =
+  process.env.VITEST === 'true' || process.env.VITEST === '1' || process.env.NODE_ENV === 'test'
+
 export default defineNitroConfig({
   serverDir: './src/server',
   features: {
-    websocket: true
+    websocket: !isVitest
   },
   hooks: {
     compiled() {

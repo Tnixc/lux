@@ -3,9 +3,12 @@ import { nitro } from 'nitro/vite'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 
+const isVitest =
+  process.env.VITEST === 'true' || process.env.VITEST === '1' || process.env.NODE_ENV === 'test'
+
 export default defineConfig({
   preview: { allowedHosts: true },
-  plugins: [nitro(), react(), tailwindcss()],
+  plugins: [!isVitest && nitro(), react(), tailwindcss()],
   staged: {
     '*': 'vp check --fix'
   },
