@@ -297,7 +297,7 @@ export function GitFileTree({ files, selectedFileSha, onSelectFile }: GitFileTre
                     {statusCode(file.status)}
                   </span>
                   {(file.additions > 0 || file.deletions > 0) && (
-                    <span className='text-[10px] tabular-nums text-muted-foreground'>
+                    <span className='hidden text-[10px] tabular-nums text-muted-foreground sm:inline'>
                       <span className='text-emerald-500'>+{file.additions}</span>{' '}
                       <span className='text-red-500'>-{file.deletions}</span>
                     </span>

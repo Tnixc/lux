@@ -69,12 +69,12 @@ export const GitFileHeader = memo(function GitFileHeader({
   const actionLabel = diffScope === 'unstaged' ? 'Stage file' : 'Unstage file'
 
   return (
-    <div className='flex items-center justify-between gap-3'>
-      <div className='flex items-center gap-3 min-w-0 flex-1'>
+    <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
+      <div className='flex min-w-0 flex-1 flex-wrap items-center gap-2 sm:gap-3'>
         <FileCode className='w-4 h-4 text-muted-foreground shrink-0' />
 
-        <div className='min-w-0'>
-          <div className='font-mono text-sm font-medium truncate'>{file.filename}</div>
+        <div className='min-w-0 basis-full sm:basis-auto'>
+          <div className='font-mono text-xs sm:text-sm font-medium truncate'>{file.filename}</div>
           {file.previous_filename && file.previous_filename !== file.filename && (
             <div className='text-[10px] text-muted-foreground truncate'>
               renamed from {file.previous_filename}
@@ -90,7 +90,7 @@ export const GitFileHeader = memo(function GitFileHeader({
         </span>
 
         {showNavigation && (
-          <div className='flex items-center gap-1 shrink-0 ml-1'>
+          <div className='flex items-center gap-1 shrink-0 sm:ml-1'>
             <button
               onClick={onPrevFile}
               className='flex items-center gap-0.5 px-1.5 py-0.5 text-xs rounded hover:bg-muted transition-colors text-muted-foreground hover:text-foreground'
@@ -122,7 +122,7 @@ export const GitFileHeader = memo(function GitFileHeader({
         onClick={onToggleStage}
         disabled={busy}
         className={cn(
-          'flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed',
+          'flex w-full items-center justify-center gap-1.5 px-3 py-1.5 text-sm rounded-md transition-colors shrink-0 disabled:opacity-60 disabled:cursor-not-allowed sm:w-auto',
           diffScope === 'unstaged'
             ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
             : 'bg-amber-500/20 text-amber-300 hover:bg-amber-500/30'

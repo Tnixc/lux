@@ -340,6 +340,7 @@ export function ProjectPage() {
   const [showCreateBranchModal, setShowCreateBranchModal] = useState(false)
   const [diffScope, setDiffScope] = useState<'unstaged' | 'staged'>('unstaged')
   const [selectedDiffSha, setSelectedDiffSha] = useState<string | null>(null)
+  const [mobileGitPanel, setMobileGitPanel] = useState<'files' | 'diff'>('files')
   const [commitMessage, setCommitMessage] = useState('')
   const [newBranchNameInput, setNewBranchNameInput] = useState('')
   const [parsedDiff, setParsedDiff] = useState<ParsedDiff | null>(null)
@@ -644,6 +645,11 @@ export function ProjectPage() {
     setSelectedDiffSha(diffFiles[next].sha)
   }, [diffFiles, selectedDiffIndex])
 
+  const handleSelectDiffFile = useCallback((sha: string) => {
+    setSelectedDiffSha(sha)
+    setMobileGitPanel('diff')
+  }, [])
+
   const toggleStageSelectedFile = useCallback(async () => {
     if (!selectedDiffFile) return
 
@@ -944,9 +950,37 @@ export function ProjectPage() {
         </TabsContent>
 
         {project.isGitRepo && (
-          <TabsContent value='git' className='h-full'>
-            <div className='h-full min-h-0 overflow-hidden bg-background flex'>
-              <aside className='w-80 shrink-0 border-r border-border flex flex-col min-h-0 bg-card/20'>
+          <TabsContent value='git' className='h-full flex flex-col'>
+            <div className='lg:hidden border-b border-border bg-card/20 px-3 py-2'>
+              <div className='grid grid-cols-2 gap-1 rounded-md border border-border bg-background/70 p-1'>
+                <Button
+                  type='button'
+                  size='sm'
+                  variant={mobileGitPanel === 'files' ? 'secondary' : 'ghost'}
+                  className='h-7 text-xs'
+                  onClick={() => setMobileGitPanel('files')}
+                >
+                  Files ({diffFiles.length})
+                </Button>
+                <Button
+                  type='button'
+                  size='sm'
+                  variant={mobileGitPanel === 'diff' ? 'secondary' : 'ghost'}
+                  className='h-7 text-xs'
+                  onClick={() => setMobileGitPanel('diff')}
+                >
+                  Diff
+                </Button>
+              </div>
+            </div>
+
+            <div className='flex-1 min-h-0 overflow-hidden bg-background flex flex-col lg:flex-row'>
+              <aside
+                className={cn(
+                  'w-full shrink-0 border-border flex flex-col min-h-0 bg-card/20 border-b lg:border-b-0 lg:border-r lg:w-80 lg:flex-none',
+                  mobileGitPanel === 'files' ? 'flex-1 lg:flex' : 'hidden lg:flex'
+                )}
+              >
                 <div className='px-3 py-2 border-b border-border bg-muted/30'>
                   {gitStatus ? (
                     <>
@@ -1096,15 +1130,20 @@ export function ProjectPage() {
                     <GitFileTree
                       files={diffFiles}
                       selectedFileSha={selectedDiffFile?.sha ?? null}
-                      onSelectFile={setSelectedDiffSha}
+                      onSelectFile={handleSelectDiffFile}
                     />
                   )}
                 </div>
               </aside>
 
-              <main className='flex-1 min-w-0 flex flex-col'>
-                <div className='px-3 py-2 border-b border-border bg-muted/20 flex items-center justify-between gap-3'>
-                  <div className='text-xs text-muted-foreground truncate'>
+              <main
+                className={cn(
+                  'flex-1 min-w-0 flex flex-col',
+                  mobileGitPanel === 'diff' ? 'flex' : 'hidden lg:flex'
+                )}
+              >
+                <div className='px-3 py-2 border-b border-border bg-muted/20 flex flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3'>
+                  <div className='text-xs text-muted-foreground break-words'>
                     {gitLogEntries[0]
                       ? `Latest commit: ${gitLogEntries[0].shortSha} · ${gitLogEntries[0].subject || '(no subject)'}`
                       : 'No commits yet.'}
@@ -1128,8 +1167,16 @@ export function ProjectPage() {
                     />
                   </div>
                 ) : (
-                  <div className='px-3 py-2 border-b border-border text-xs text-muted-foreground'>
-                    Select a file to review its diff.
+                  <div className='px-3 py-2 border-b border-border text-xs text-muted-foreground flex items-center justify-between gap-2'>
+                    <span>Select a file to review its diff.</span>
+                    <Button
+                      variant='ghost'
+                      size='sm'
+                      className='h-7 text-[11px] lg:hidden'
+                      onClick={() => setMobileGitPanel('files')}
+                    >
+                      Browse files
+                    </Button>
                   </div>
                 )}
 
