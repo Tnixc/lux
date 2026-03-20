@@ -1,5 +1,6 @@
 import { createError, defineEventHandler, readBody } from 'h3'
 import { homedir } from 'node:os'
+import path from 'node:path'
 import { stat, realpath } from 'node:fs/promises'
 import { expandHomePath, setSetting } from '../utils/settings'
 
@@ -20,7 +21,7 @@ export default defineEventHandler(async (event) => {
     }
 
     const rawPaths = body.homeDir
-      .split(':')
+      .split(path.delimiter)
       .map((p) => p.trim())
       .filter(Boolean)
     if (rawPaths.length === 0) {
@@ -39,7 +40,7 @@ export default defineEventHandler(async (event) => {
       }
     }
 
-    setSetting('home_dir', rawPaths.join(':'))
+    setSetting('home_dir', rawPaths.join(path.delimiter))
   }
 
   return { ok: true }

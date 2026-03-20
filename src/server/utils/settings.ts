@@ -38,7 +38,7 @@ export function getConfiguredHomeDir(): string {
 export function getConfiguredHomeDirs(): string[] {
   const raw = process.env.LUX_HOME_DIR?.trim() || getSetting('home_dir') || homedir()
   return raw
-    .split(':')
+    .split(path.delimiter)
     .map((p) => expandHomePath(p))
     .filter(Boolean)
 }

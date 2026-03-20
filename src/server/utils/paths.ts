@@ -10,7 +10,12 @@ export function ensureSafePath(rawPath: string, homeDirs: string[]) {
   if (segments.includes('..')) {
     throw createError({ statusCode: 400, statusMessage: 'invalid_path' })
   }
-  const resolvedPath = realpathSync(rawPath)
+  let resolvedPath: string
+  try {
+    resolvedPath = realpathSync(rawPath)
+  } catch {
+    throw createError({ statusCode: 400, statusMessage: 'invalid_path' })
+  }
   const withinAny = homeDirs.some((homeDir) => {
     try {
       return isWithin(resolvedPath, realpathSync(homeDir))
