@@ -37,3 +37,11 @@ export function getConfiguredHomeDir() {
   }
   return getSetting('home_dir') || homedir()
 }
+
+export function getConfiguredDefaultAgentCli() {
+  const envDefaultAgentCli = process.env.LUX_DEFAULT_AGENT_CLI
+  if (envDefaultAgentCli?.trim()) {
+    return envDefaultAgentCli.trim()
+  }
+  return getSetting('default_agent_cli') || 'amp'
+}

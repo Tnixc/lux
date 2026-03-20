@@ -1,9 +1,9 @@
 import { defineEventHandler } from 'h3'
-import { getConfiguredHomeDir, getSetting } from '../utils/settings'
+import { getConfiguredDefaultAgentCli, getConfiguredHomeDir } from '../utils/settings'
 
 export default defineEventHandler(() => {
   return {
-    defaultAgentCli: getSetting('default_agent_cli') || 'amp',
+    defaultAgentCli: getConfiguredDefaultAgentCli(),
     homeDir: getConfiguredHomeDir()
   }
 })

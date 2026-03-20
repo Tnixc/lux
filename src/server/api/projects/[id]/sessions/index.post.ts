@@ -3,7 +3,7 @@ import { nanoid } from 'nanoid'
 import { eq } from 'drizzle-orm'
 import { getDb } from '../../../../db'
 import { projects, sessions } from '../../../../db/schema'
-import { getSetting } from '../../../../utils/settings'
+import { getConfiguredDefaultAgentCli } from '../../../../utils/settings'
 import { stat } from 'node:fs/promises'
 import { tmuxListPanes, tmuxNewSession, tmuxSendKeys } from '../../../../utils/tmux'
 import { removeSessionRuntime } from '../../../../tmux/session-runtime-registry'
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'project_path_missing' })
   }
 
-  const agentCli = body?.agentCli?.trim() || getSetting('default_agent_cli') || 'amp'
+  const agentCli = body?.agentCli?.trim() || getConfiguredDefaultAgentCli()
   const id = nanoid()
   const tmuxSession = `lux-${id}`
   const now = Math.floor(Date.now() / 1000)

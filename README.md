@@ -25,10 +25,12 @@ GITHUB_CLIENT_ID=...
 GITHUB_CLIENT_SECRET=...
 LUX_GITHUB_ALLOWED_USERS=your-github-username[,another-username]
 LUX_HOME_DIR=~/code
+LUX_DEFAULT_AGENT_CLI=codex
 ```
 
 `LUX_AUTH_MODE` can be `github` or `none`.
 `LUX_GITHUB_ALLOWED_USERS` is a comma-separated GitHub username allowlist (used in `github` mode).
 `LUX_HOME_DIR` controls the root directory shown in the directory picker (defaults to `~`).
+`LUX_DEFAULT_AGENT_CLI` sets the default agent CLI command when creating sessions (defaults to `amp`).
 
 Install dependencies with `vp i`, `vp build`, and finally `vp preview`.

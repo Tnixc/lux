@@ -7,6 +7,10 @@ export default defineEventHandler(async (event) => {
   const body = await readBody<{ defaultAgentCli?: string; homeDir?: string }>(event)
 
   if (body?.defaultAgentCli) {
+    if (process.env.LUX_DEFAULT_AGENT_CLI?.trim()) {
+      throw createError({ statusCode: 409, statusMessage: 'default_agent_cli_managed_by_env' })
+    }
+
     setSetting('default_agent_cli', body.defaultAgentCli.trim())
   }
 
