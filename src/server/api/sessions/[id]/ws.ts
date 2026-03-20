@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm'
 import type { Peer } from 'crossws'
 import { getDb } from '../../../db'
 import { sessions, userSessions } from '../../../db/schema'
-import { getSignedSessionIdFromCookieHeader } from '../../../utils/auth'
+import { getAuthMode, getSignedSessionIdFromCookieHeader } from '../../../utils/auth'
 import { validateOriginForRequest } from '../../../utils/security'
 import { getSessionRuntime } from '../../../tmux/session-runtime-registry'
 import type { ClientMessage, HubClient } from '../../../tmux/hub'
@@ -34,19 +34,25 @@ export default defineWebSocketHandler({
       return new Response('invalid_origin', { status: 403 })
     }
 
-    const sessionToken = getSignedSessionIdFromCookieHeader(request.headers.get('cookie'))
-    if (!sessionToken) {
-      return new Response('unauthorized', { status: 401 })
-    }
-
     const db = getDb()
-    const userSession = db
-      .select()
-      .from(userSessions)
-      .where(eq(userSessions.id, sessionToken))
-      .get()
-    if (!userSession || userSession.expiresAt < Math.floor(Date.now() / 1000)) {
-      return new Response('session_expired', { status: 401 })
+    let userId: string | null = null
+
+    if (getAuthMode() !== 'none') {
+      const sessionToken = getSignedSessionIdFromCookieHeader(request.headers.get('cookie'))
+      if (!sessionToken) {
+        return new Response('unauthorized', { status: 401 })
+      }
+
+      const userSession = db
+        .select()
+        .from(userSessions)
+        .where(eq(userSessions.id, sessionToken))
+        .get()
+      if (!userSession || userSession.expiresAt < Math.floor(Date.now() / 1000)) {
+        return new Response('session_expired', { status: 401 })
+      }
+
+      userId = userSession.userId
     }
 
     const session = db.select().from(sessions).where(eq(sessions.id, sessionId)).get()
@@ -54,7 +60,7 @@ export default defineWebSocketHandler({
       return new Response('session_not_found', { status: 404 })
     }
 
-    return { context: { userId: userSession.userId, sessionId } }
+    return { context: { userId, sessionId } }
   },
 
   open(peer) {

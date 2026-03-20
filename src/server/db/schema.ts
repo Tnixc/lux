@@ -1,10 +1,6 @@
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
-export const allowedUsers = sqliteTable('allowed_users', {
-  login: text('login').primaryKey()
-})
-
 export const users = sqliteTable('users', {
   id: text('id').primaryKey(),
   login: text('login').notNull().unique(),
@@ -69,7 +65,6 @@ export const sessions = sqliteTable('sessions', {
     .default(sql`(unixepoch())`)
 })
 
-export type AllowedUser = typeof allowedUsers.$inferSelect
 export type User = typeof users.$inferSelect
 export type UserSession = typeof userSessions.$inferSelect
 export type Project = typeof projects.$inferSelect

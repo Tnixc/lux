@@ -1,3 +1,5 @@
+import { homedir } from 'node:os'
+import path from 'node:path'
 import { eq } from 'drizzle-orm'
 import { getDb } from '../db'
 import { settings } from '../db/schema'
@@ -16,4 +18,22 @@ export function setSetting(key: string, value: string) {
   } else {
     db.insert(settings).values({ key, value }).run()
   }
+}
+
+export function expandHomePath(rawPath: string) {
+  const trimmed = rawPath.trim()
+  if (!trimmed) return trimmed
+  if (trimmed === '~') return homedir()
+  if (trimmed.startsWith('~/') || trimmed.startsWith('~\\')) {
+    return path.join(homedir(), trimmed.slice(2))
+  }
+  return trimmed
+}
+
+export function getConfiguredHomeDir() {
+  const envHome = process.env.LUX_HOME_DIR
+  if (envHome?.trim()) {
+    return expandHomePath(envHome)
+  }
+  return getSetting('home_dir') || homedir()
 }

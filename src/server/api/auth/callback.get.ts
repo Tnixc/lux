@@ -10,10 +10,21 @@ import {
 import { eq } from 'drizzle-orm'
 import { getDb } from '../../db'
 import { auditLog } from '../../utils/audit'
-import { allowedUsers, userSessions, users } from '../../db/schema'
-import { createSessionExpiry, createSessionToken, setSessionCookie } from '../../utils/auth'
+import { userSessions, users } from '../../db/schema'
+import {
+  createSessionExpiry,
+  createSessionToken,
+  getAuthMode,
+  getGithubLoginAllowlist,
+  isGithubLoginAllowed,
+  setSessionCookie
+} from '../../utils/auth'
 
 export default defineEventHandler(async (event) => {
+  if (getAuthMode() === 'none') {
+    return redirect('/', 302)
+  }
+
   const { code, state } = getQuery(event)
   const cookieState = getCookie(event, 'lux_oauth_state')
 
@@ -71,12 +82,15 @@ export default defineEventHandler(async (event) => {
     avatar_url?: string | null
   }
 
-  const db = getDb()
-  const allowed = db.select().from(allowedUsers).where(eq(allowedUsers.login, user.login)).get()
-  if (!allowed) {
+  const allowlist = getGithubLoginAllowlist()
+  if (allowlist.length === 0) {
+    throw createError({ statusCode: 500, statusMessage: 'missing_github_allowed_users' })
+  }
+  if (!isGithubLoginAllowed(user.login)) {
     throw createError({ statusCode: 403, statusMessage: 'forbidden' })
   }
 
+  const db = getDb()
   const userId = String(user.id)
   const existing = db.select().from(users).where(eq(users.id, userId)).get()
   if (existing) {

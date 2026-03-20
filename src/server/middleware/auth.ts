@@ -4,6 +4,7 @@ import { getDb } from '../db'
 import { userSessions, users } from '../db/schema'
 import {
   createSessionExpiry,
+  getAuthMode,
   getSignedSessionId,
   setSessionCookie,
   clearSessionCookie,
@@ -22,6 +23,17 @@ export default defineMiddleware((event) => {
 
   if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(event.req.method)) {
     assertSameOrigin(event)
+  }
+
+  if (getAuthMode() === 'none') {
+    event.context.userId = null
+    event.context.user = {
+      id: 'local',
+      login: 'local',
+      name: 'Local User',
+      avatarUrl: null
+    }
+    return
   }
 
   const sessionId = getSignedSessionId(event)

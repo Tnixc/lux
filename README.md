@@ -17,13 +17,18 @@ lux lets you browse directories on your machine, mark them as projects, and spin
 
 You will need Vite+, tmux, Node.js (Vite+ can do this for you).
 
-Copy `.env.example` to `.env` and fill in your GitHub OAuth credentials:
+Copy `.env.example` to `.env` and fill in your GitHub OAuth credentials/config:
 
 ```
+LUX_AUTH_MODE=github
 GITHUB_CLIENT_ID=...
 GITHUB_CLIENT_SECRET=...
+LUX_GITHUB_ALLOWED_USERS=your-github-username[,another-username]
+LUX_HOME_DIR=~/code
 ```
 
-There's also an hardcoded seed to only allow my GitHub account, change it to your username in `src/server/db/index.ts`.
+`LUX_AUTH_MODE` can be `github` or `none`.
+`LUX_GITHUB_ALLOWED_USERS` is a comma-separated GitHub username allowlist (used in `github` mode).
+`LUX_HOME_DIR` controls the root directory shown in the directory picker (defaults to `~`).
 
 Install dependencies with `vp i`, `vp build`, and finally `vp preview`.

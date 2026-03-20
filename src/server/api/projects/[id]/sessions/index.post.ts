@@ -46,7 +46,7 @@ export default defineEventHandler(async (event) => {
       agentCli,
       desiredStatus: 'running',
       observedStatus: 'starting',
-      createdBy: String(event.context.userId) || null,
+      createdBy: event.context.userId ? String(event.context.userId) : null,
       createdAt: now,
       updatedAt: now
     })

@@ -5,7 +5,7 @@ import { existsSync, mkdirSync } from 'node:fs'
 import { homedir } from 'node:os'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import { allowedUsers, projects, sessions, settings, userSessions, users } from './schema'
+import { projects, sessions, settings, userSessions, users } from './schema'
 
 const DEFAULT_DB_DIR = path.join(homedir(), '.lux')
 const DEFAULT_DB_PATH = path.join(DEFAULT_DB_DIR, 'lux.db')
@@ -39,10 +39,6 @@ export function initDb() {
   sqlite.exec('PRAGMA foreign_keys = ON')
 
   sqlite.exec(`
-    CREATE TABLE IF NOT EXISTS allowed_users (
-      login TEXT PRIMARY KEY
-    );
-
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
       login TEXT NOT NULL UNIQUE,
@@ -106,7 +102,7 @@ export function initDb() {
 
   db = drizzle({
     client: sqlite,
-    schema: { allowedUsers, users, userSessions, settings, projects, sessions }
+    schema: { users, userSessions, settings, projects, sessions }
   })
 
   seedDefaults(db)
@@ -119,15 +115,6 @@ function seedDefaults(database: ReturnType<typeof drizzle>) {
     if (!existing) {
       database.insert(settings).values({ key, value }).run()
     }
-  }
-
-  const allow = database
-    .select()
-    .from(allowedUsers)
-    .where(eq(allowedUsers.login, 'taskylizard'))
-    .get()
-  if (!allow) {
-    database.insert(allowedUsers).values({ login: 'taskylizard' }).run()
   }
 
   ensureSetting('default_agent_cli', 'amp')

@@ -1,10 +1,19 @@
 import { createError, defineEventHandler, getRequestURL, sendRedirect, setCookie } from 'h3'
 import { randomBytes } from 'node:crypto'
+import { getAuthMode, getGithubLoginAllowlist } from '../../utils/auth'
 
 export default defineEventHandler((event) => {
+  if (getAuthMode() === 'none') {
+    return sendRedirect(event, '/', 302)
+  }
+
   const clientId = process.env.GITHUB_CLIENT_ID
   if (!clientId) {
     throw createError({ statusCode: 500, statusMessage: 'missing_github_client_id' })
+  }
+
+  if (getGithubLoginAllowlist().length === 0) {
+    throw createError({ statusCode: 500, statusMessage: 'missing_github_allowed_users' })
   }
 
   const state = randomBytes(16).toString('hex')

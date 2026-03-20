@@ -1,15 +1,14 @@
 import { defineEventHandler } from 'h3'
 import { readdir, realpath, stat } from 'node:fs/promises'
 import path from 'node:path'
-import { homedir } from 'node:os'
 import { getDb } from '../db'
 import { projects } from '../db/schema'
 import { isGitRepo } from '../utils/git'
-import { getSetting } from '../utils/settings'
+import { getConfiguredHomeDir } from '../utils/settings'
 import { isWithin } from '../utils/paths'
 
 export default defineEventHandler(async () => {
-  const homeDir = getSetting('home_dir') || homedir()
+  const homeDir = getConfiguredHomeDir()
   const entries = await readdir(homeDir, { withFileTypes: true })
   const resolvedHome = await realpath(homeDir)
   const db = getDb()

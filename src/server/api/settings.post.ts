@@ -1,7 +1,7 @@
 import { createError, defineEventHandler, readBody } from 'h3'
 import { homedir } from 'node:os'
 import { stat, realpath } from 'node:fs/promises'
-import { setSetting } from '../utils/settings'
+import { expandHomePath, setSetting } from '../utils/settings'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ defaultAgentCli?: string; homeDir?: string }>(event)
@@ -11,7 +11,11 @@ export default defineEventHandler(async (event) => {
   }
 
   if (body?.homeDir) {
-    const raw = body.homeDir.trim() || homedir()
+    if (process.env.LUX_HOME_DIR?.trim()) {
+      throw createError({ statusCode: 409, statusMessage: 'home_dir_managed_by_env' })
+    }
+
+    const raw = expandHomePath(body.homeDir.trim()) || homedir()
     const resolved = await realpath(raw).catch(() => null)
     if (!resolved) {
       throw createError({ statusCode: 400, statusMessage: 'home_dir_invalid' })

@@ -7,6 +7,37 @@ import { settings, userSessions } from '../db/schema'
 export const AUTH_COOKIE_NAME = 'lux_auth_session'
 const SESSION_TTL_DAYS = 30
 
+export type AuthMode = 'github' | 'none'
+
+export function getAuthMode(): AuthMode {
+  const raw = (process.env.LUX_AUTH_MODE || 'github').trim().toLowerCase()
+  if (raw === 'none') return 'none'
+  return 'github'
+}
+
+function normalizeGithubLogin(value: string) {
+  return value.trim().replace(/^@/, '').toLowerCase()
+}
+
+export function getGithubLoginAllowlist() {
+  return Array.from(
+    new Set(
+      (process.env.LUX_GITHUB_ALLOWED_USERS || '')
+        .split(',')
+        .map(normalizeGithubLogin)
+        .filter(Boolean)
+    )
+  )
+}
+
+export function isGithubLoginAllowed(login: string) {
+  const allowlist = getGithubLoginAllowlist()
+  if (allowlist.length === 0) {
+    return false
+  }
+  return allowlist.includes(normalizeGithubLogin(login))
+}
+
 export function createSessionToken() {
   return randomBytes(32).toString('base64url')
 }
