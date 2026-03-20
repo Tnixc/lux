@@ -189,8 +189,10 @@ function NewProjectDialog({
             />
           </div>
 
-          {data?.root && (
-            <p className='truncate text-[11px] text-muted-foreground font-precise'>{data.root}</p>
+          {data?.roots && data.roots.length > 0 && (
+            <p className='truncate text-[11px] text-muted-foreground font-precise'>
+              {data.roots.join(':')}
+            </p>
           )}
 
           <div className='max-h-[55vh] overflow-y-auto rounded-md border border-border bg-card/30'>

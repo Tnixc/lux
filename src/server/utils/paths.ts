@@ -2,7 +2,7 @@ import { realpathSync } from 'node:fs'
 import path from 'node:path'
 import { createError } from 'h3'
 
-export function ensureSafePath(rawPath: string, homeDir: string) {
+export function ensureSafePath(rawPath: string, homeDirs: string[]) {
   if (!rawPath) {
     throw createError({ statusCode: 400, statusMessage: 'path_required' })
   }
@@ -10,9 +10,15 @@ export function ensureSafePath(rawPath: string, homeDir: string) {
   if (segments.includes('..')) {
     throw createError({ statusCode: 400, statusMessage: 'invalid_path' })
   }
-  const resolvedHome = realpathSync(homeDir)
   const resolvedPath = realpathSync(rawPath)
-  if (!isWithin(resolvedPath, resolvedHome)) {
+  const withinAny = homeDirs.some((homeDir) => {
+    try {
+      return isWithin(resolvedPath, realpathSync(homeDir))
+    } catch {
+      return false
+    }
+  })
+  if (!withinAny) {
     throw createError({ statusCode: 400, statusMessage: 'path_outside_home' })
   }
   return resolvedPath

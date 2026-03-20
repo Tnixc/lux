@@ -215,7 +215,7 @@ export function useAuthMe() {
 export function useDirectories() {
   return useQuery({
     queryKey: queryKeys.directories,
-    queryFn: () => apiGet<{ root: string; entries: DirectoryEntry[] }>('/api/directories')
+    queryFn: () => apiGet<{ roots: string[]; entries: DirectoryEntry[] }>('/api/directories')
   })
 }
 

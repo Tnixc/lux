@@ -30,12 +30,17 @@ export function expandHomePath(rawPath: string) {
   return trimmed
 }
 
-export function getConfiguredHomeDir() {
-  const envHome = process.env.LUX_HOME_DIR
-  if (envHome?.trim()) {
-    return expandHomePath(envHome)
-  }
-  return getSetting('home_dir') || homedir()
+export function getConfiguredHomeDir(): string {
+  const raw = process.env.LUX_HOME_DIR?.trim() || getSetting('home_dir') || homedir()
+  return expandHomePath(raw)
+}
+
+export function getConfiguredHomeDirs(): string[] {
+  const raw = process.env.LUX_HOME_DIR?.trim() || getSetting('home_dir') || homedir()
+  return raw
+    .split(':')
+    .map((p) => expandHomePath(p))
+    .filter(Boolean)
 }
 
 export function getConfiguredDefaultAgentCli() {

@@ -19,16 +19,27 @@ export default defineEventHandler(async (event) => {
       throw createError({ statusCode: 409, statusMessage: 'home_dir_managed_by_env' })
     }
 
-    const raw = expandHomePath(body.homeDir.trim()) || homedir()
-    const resolved = await realpath(raw).catch(() => null)
-    if (!resolved) {
+    const rawPaths = body.homeDir
+      .split(':')
+      .map((p) => p.trim())
+      .filter(Boolean)
+    if (rawPaths.length === 0) {
       throw createError({ statusCode: 400, statusMessage: 'home_dir_invalid' })
     }
-    const info = await stat(resolved).catch(() => null)
-    if (!info?.isDirectory()) {
-      throw createError({ statusCode: 400, statusMessage: 'home_dir_invalid' })
+
+    for (const raw of rawPaths) {
+      const expanded = expandHomePath(raw) || homedir()
+      const resolved = await realpath(expanded).catch(() => null)
+      if (!resolved) {
+        throw createError({ statusCode: 400, statusMessage: 'home_dir_invalid' })
+      }
+      const info = await stat(resolved).catch(() => null)
+      if (!info?.isDirectory()) {
+        throw createError({ statusCode: 400, statusMessage: 'home_dir_invalid' })
+      }
     }
-    setSetting('home_dir', resolved)
+
+    setSetting('home_dir', rawPaths.join(':'))
   }
 
   return { ok: true }

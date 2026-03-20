@@ -7,7 +7,7 @@ import path from 'node:path'
 import { getDb } from '../../db'
 import { projects } from '../../db/schema'
 import { ensureSafePath } from '../../utils/paths'
-import { getConfiguredHomeDir } from '../../utils/settings'
+import { getConfiguredHomeDirs } from '../../utils/settings'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody<{ path?: string; name?: string; icon?: string | null }>(event)
@@ -16,8 +16,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'path_required' })
   }
 
-  const homeDir = getConfiguredHomeDir()
-  const resolved = ensureSafePath(rawPath, homeDir)
+  const homeDirs = getConfiguredHomeDirs()
+  const resolved = ensureSafePath(rawPath, homeDirs)
 
   const info = await stat(resolved).catch(() => null)
   if (!info?.isDirectory()) {

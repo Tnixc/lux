@@ -116,9 +116,9 @@ function DirectoryBrowser() {
       <div className='px-4 py-3 border-b border-border shrink-0'>
         <div className='flex items-center justify-between mb-2'>
           <h2 className='text-sm font-semibold'>Directories</h2>
-          {data?.root && (
+          {data?.roots && data.roots.length > 0 && (
             <span className='text-[11px] font-mono text-muted-foreground truncate ml-2'>
-              {data.root}
+              {data.roots.join(':')}
             </span>
           )}
         </div>
