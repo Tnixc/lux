@@ -33,7 +33,7 @@ function CreateProjectDialog({
     })
     onOpenChange(false)
     openProjectTab(result.id, result.name)
-    navigate(`/projects/${result.id}`)
+    navigate(`/projects/${result.id}/sessions`)
   }, [createProject, directoryPath, name, onOpenChange, openProjectTab, navigate])
 
   return (
@@ -105,7 +105,7 @@ function DirectoryBrowser() {
   const handleOpenProject = useCallback(
     (projectId: string, name: string) => {
       openProjectTab(projectId, name)
-      navigate(`/projects/${projectId}`)
+      navigate(`/projects/${projectId}/sessions`)
     },
     [openProjectTab, navigate]
   )
@@ -215,7 +215,7 @@ function ProjectsList() {
   const handleOpen = useCallback(
     (id: string, name: string) => {
       openProjectTab(id, name)
-      navigate(`/projects/${id}`)
+      navigate(`/projects/${id}/sessions`)
     },
     [openProjectTab, navigate]
   )

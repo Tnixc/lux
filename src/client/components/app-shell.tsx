@@ -33,7 +33,7 @@ function sessionStatusDot(status?: string) {
 
 function getTabHref(tab: Tab): string {
   if (tab.type === 'home') return '/'
-  if (tab.type === 'project') return `/projects/${tab.projectId}`
+  if (tab.type === 'project') return `/projects/${tab.projectId}/sessions`
   if (tab.type === 'session') return `/projects/${tab.projectId}/sessions/${tab.sessionId}`
   return '/'
 }

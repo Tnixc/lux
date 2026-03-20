@@ -438,7 +438,7 @@ export function SessionPage() {
     if (sessionId) {
       deleteSession.mutate(sessionId, {
         onSuccess: () => {
-          navigate(`/projects/${projectId}`)
+          navigate(`/projects/${projectId}/sessions`)
         }
       })
     }
@@ -463,7 +463,11 @@ export function SessionPage() {
     <div className='flex flex-col h-full bg-background'>
       {/* Header */}
       <div className='flex items-center gap-3 border-b border-border px-4 py-2 shrink-0 bg-card/30'>
-        <Button variant='ghost' size='icon-sm' onClick={() => navigate(`/projects/${projectId}`)}>
+        <Button
+          variant='ghost'
+          size='icon-sm'
+          onClick={() => navigate(`/projects/${projectId}/sessions`)}
+        >
           <ArrowLeft className='w-4 h-4' />
         </Button>
 

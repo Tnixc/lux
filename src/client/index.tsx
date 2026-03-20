@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { queryClient } from './lib/query-client'
 import { AuthProvider, RequireAuth } from './contexts/auth'
@@ -19,7 +19,12 @@ export default function App() {
               <Routes>
                 <Route element={<AppShell />}>
                   <Route path='/' element={<Home />} />
-                  <Route path='/projects/:projectId' element={<ProjectPage />} />
+                  <Route path='/projects/:projectId' element={<Navigate to='sessions' replace />} />
+                  <Route
+                    path='/projects/:projectId/sessions'
+                    element={<ProjectPage view='sessions' />}
+                  />
+                  <Route path='/projects/:projectId/git' element={<ProjectPage view='git' />} />
                   <Route
                     path='/projects/:projectId/sessions/:sessionId'
                     element={<SessionPage />}

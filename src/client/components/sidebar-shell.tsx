@@ -639,7 +639,7 @@ export function AppShell() {
   const handleOpenProject = useCallback(
     (projectId: string) => {
       if (isMobile) setIsMobileOpen(false)
-      navigate(`/projects/${projectId}`)
+      navigate(`/projects/${projectId}/sessions`)
     },
     [isMobile, navigate]
   )

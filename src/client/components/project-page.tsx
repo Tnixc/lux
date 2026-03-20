@@ -318,7 +318,7 @@ function ProjectIconDialog({
   )
 }
 
-export function ProjectPage() {
+export function ProjectPage({ view }: { view: 'sessions' | 'git' }) {
   const { projectId } = useParams<{ projectId: string }>()
   const navigate = useNavigate()
   const { openSessionTab, closeProjectTabs } = useTabContext()
@@ -334,7 +334,7 @@ export function ProjectPage() {
   const [showCreateSession, setShowCreateSession] = useState(false)
   const [showProjectIconDialog, setShowProjectIconDialog] = useState(false)
   const [confirmDeleteProject, setConfirmDeleteProject] = useState(false)
-  const [activeView, setActiveView] = useState<'sessions' | 'git'>('sessions')
+  const activeView = view === 'git' && project?.isGitRepo === false ? 'sessions' : view
   const [showCommitModal, setShowCommitModal] = useState(false)
   const [pushAfterCommit, setPushAfterCommit] = useState(false)
   const [showCreateBranchModal, setShowCreateBranchModal] = useState(false)
@@ -394,10 +394,10 @@ export function ProjectPage() {
     : -1
 
   useEffect(() => {
-    if (!project?.isGitRepo && activeView === 'git') {
-      setActiveView('sessions')
+    if (view === 'git' && project?.isGitRepo === false && projectId) {
+      navigate(`/projects/${projectId}/sessions`, { replace: true })
     }
-  }, [project?.isGitRepo, activeView])
+  }, [view, project?.isGitRepo, projectId, navigate])
 
   useEffect(() => {
     if (diffFiles.length === 0) {
@@ -775,8 +775,12 @@ export function ProjectPage() {
     <Tabs
       value={activeView}
       onValueChange={(value) => {
-        if (value === 'sessions' || value === 'git') {
-          setActiveView(value)
+        if (value === 'sessions' && projectId) {
+          navigate(`/projects/${projectId}/sessions`)
+          return
+        }
+        if (value === 'git' && project?.isGitRepo && projectId) {
+          navigate(`/projects/${projectId}/git`)
         }
       }}
       className='h-full gap-0 bg-background'
