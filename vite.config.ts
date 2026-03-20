@@ -23,5 +23,5 @@ export default defineConfig({
     useTabs: false,
     sortPackageJson: true
   },
-  lint: {}
+  lint: { options: { typeAware: true, typeCheck: true } }
 })
