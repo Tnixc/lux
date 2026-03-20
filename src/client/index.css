@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 @import './components/ui/diff/theme.css';
+@import '@fontsource/fira-code/400.css';
+@import '@fontsource/fira-code/700.css';
 
 /* Custom xs breakpoint for extra small screens (between 0 and sm) */
 @custom-media --xs-screen (min-width: 420px);
@@ -146,6 +148,7 @@
     'Geist', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial,
     sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
   --font-mono: 'Geist Mono', 'Fira Code', 'Fira Mono', ui-monospace, monospace;
+  --font-terminal: 'Fira Code', 'Geist Mono', 'Fira Mono', ui-monospace, monospace;
 }
 
 @layer base {

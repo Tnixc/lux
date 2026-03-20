@@ -266,7 +266,7 @@ export function SessionPage() {
     if (!terminalRef.current || !sessionId) return
 
     const term = new Terminal({
-      fontFamily: cssVar('--font-mono', 'monospace'),
+      fontFamily: cssVar('--font-terminal', '"Fira Code", monospace'),
       fontSize: getTerminalFontSize(),
       cursorBlink: true,
       allowTransparency: true,
