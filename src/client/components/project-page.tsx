@@ -115,6 +115,14 @@ function formatCommitTimestamp(isoTimestamp: string) {
   return parsed.toLocaleString()
 }
 
+function parseCommitRefs(rawRefs: string) {
+  if (!rawRefs) return []
+  return rawRefs
+    .split(',')
+    .map((ref) => ref.trim())
+    .filter(Boolean)
+}
+
 function extractPatchBody(rawPatch: string) {
   const lines = rawPatch.split('\n')
   const firstHunkLine = lines.findIndex((line) => line.startsWith('@@'))
@@ -596,6 +604,21 @@ export function ProjectPage({ view }: { view: 'sessions' | 'git' }) {
     }
   }, [pushGit])
 
+  const handleCopyCommitSha = useCallback(async (sha: string) => {
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error('Clipboard is unavailable in this browser.')
+      }
+      await navigator.clipboard.writeText(sha)
+      setGitActionNotice({ tone: 'success', text: `Copied ${sha.slice(0, 7)} to clipboard.` })
+    } catch (err) {
+      setGitActionNotice({
+        tone: 'error',
+        text: actionErrorMessage(err, 'Failed to copy commit SHA.')
+      })
+    }
+  }, [])
+
   const handleRefreshGit = useCallback(() => {
     parsedDiffCacheRef.current.clear()
     setParsedDiff(null)
@@ -954,7 +977,7 @@ export function ProjectPage({ view }: { view: 'sessions' | 'git' }) {
         </TabsContent>
 
         {project.isGitRepo && (
-          <TabsContent value='git' className='h-full flex flex-col'>
+          <TabsContent value='git' className='h-full min-h-0 flex flex-col'>
             <div className='lg:hidden border-b border-border bg-card/20 px-3 py-2'>
               <div className='grid grid-cols-2 gap-1 rounded-md border border-border bg-background/70 p-1'>
                 <Button
@@ -1142,18 +1165,29 @@ export function ProjectPage({ view }: { view: 'sessions' | 'git' }) {
 
               <main
                 className={cn(
-                  'flex-1 min-w-0 flex flex-col',
+                  'flex-1 min-w-0 min-h-0 flex flex-col',
                   mobileGitPanel === 'diff' ? 'flex' : 'hidden lg:flex'
                 )}
               >
                 <div className='px-3 py-2 border-b border-border bg-muted/20 flex flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:justify-between sm:gap-3'>
-                  <div className='text-xs text-muted-foreground break-words'>
-                    {gitLogEntries[0]
-                      ? `Latest commit: ${gitLogEntries[0].shortSha} · ${gitLogEntries[0].subject || '(no subject)'}`
-                      : 'No commits yet.'}
+                  <div
+                    className={cn(
+                      'text-xs break-words',
+                      gitLogError ? 'text-red-400' : 'text-muted-foreground'
+                    )}
+                  >
+                    {gitLogLoading
+                      ? 'Loading latest commit…'
+                      : gitLogError
+                        ? actionErrorMessage(gitLogError, 'Failed to load latest commit.')
+                        : gitLogEntries[0]
+                          ? `Latest commit: ${gitLogEntries[0].shortSha} · ${gitLogEntries[0].subject || '(no subject)'}`
+                          : 'No commits yet.'}
                   </div>
-                  <div className='text-[10px] text-muted-foreground shrink-0'>
-                    {gitLogEntries[0] ? formatCommitTimestamp(gitLogEntries[0].authoredAt) : ''}
+                  <div className='text-[11px] text-muted-foreground shrink-0'>
+                    {!gitLogLoading && !gitLogError && gitLogEntries[0]
+                      ? formatCommitTimestamp(gitLogEntries[0].authoredAt)
+                      : ''}
                   </div>
                 </div>
 
@@ -1184,7 +1218,7 @@ export function ProjectPage({ view }: { view: 'sessions' | 'git' }) {
                   </div>
                 )}
 
-                <div className='flex-1 overflow-auto bg-muted/20'>
+                <div className='flex-1 min-h-0 overflow-auto bg-muted/20'>
                   {parsedDiffLoading ? (
                     <div className='p-3 space-y-1'>
                       {Array.from({ length: 10 }).map((_, i) => (
@@ -1279,7 +1313,7 @@ export function ProjectPage({ view }: { view: 'sessions' | 'git' }) {
                   )}
                 </div>
 
-                <div className='border-t border-border p-3 space-y-3 bg-card/20'>
+                <div className='shrink-0 border-t border-border p-3 space-y-3 bg-card/20'>
                   <div className='flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between'>
                     <div
                       className={cn(
@@ -1320,7 +1354,7 @@ export function ProjectPage({ view }: { view: 'sessions' | 'git' }) {
                     <summary className='cursor-pointer text-xs text-muted-foreground hover:text-foreground'>
                       Recent commits ({gitLogEntries.length})
                     </summary>
-                    <div className='mt-2 max-h-40 overflow-auto rounded-md border border-border divide-y divide-border themed-scrollbar'>
+                    <div className='mt-2 max-h-56 overflow-auto rounded-md border border-border divide-y divide-border themed-scrollbar'>
                       {gitLogLoading ? (
                         <div className='p-3 text-xs text-muted-foreground'>Loading commits…</div>
                       ) : gitLogError ? (
@@ -1330,19 +1364,62 @@ export function ProjectPage({ view }: { view: 'sessions' | 'git' }) {
                       ) : gitLogEntries.length === 0 ? (
                         <div className='p-3 text-xs text-muted-foreground'>No commits yet.</div>
                       ) : (
-                        gitLogEntries.map((entry) => (
-                          <div key={entry.sha} className='px-3 py-2'>
-                            <div className='text-xs font-medium truncate'>
-                              {entry.subject || '(no subject)'}
+                        gitLogEntries.map((entry) => {
+                          const refs = parseCommitRefs(entry.refs)
+                          return (
+                            <div key={entry.sha} className='px-3 py-2.5'>
+                              <div
+                                className='text-xs font-medium leading-5 break-words'
+                                title={entry.subject || '(no subject)'}
+                              >
+                                {entry.subject || '(no subject)'}
+                              </div>
+
+                              <div className='mt-1 flex items-center justify-between gap-2 text-[11px] text-muted-foreground'>
+                                <span className='truncate'>
+                                  {entry.authorName || 'Unknown author'}
+                                </span>
+                                <span className='shrink-0' title={entry.authoredAt}>
+                                  {formatCommitTimestamp(entry.authoredAt)}
+                                </span>
+                              </div>
+
+                              <div className='mt-1 flex items-center gap-2 text-[10px] text-muted-foreground'>
+                                <span className='font-mono select-all'>{entry.shortSha}</span>
+                                <button
+                                  type='button'
+                                  className='underline-offset-2 hover:underline'
+                                  onClick={() => void handleCopyCommitSha(entry.sha)}
+                                  title='Copy full commit SHA'
+                                >
+                                  Copy
+                                </button>
+                              </div>
+
+                              {refs.length > 0 && (
+                                <div className='mt-1.5 flex flex-wrap gap-1'>
+                                  {refs.slice(0, 3).map((ref, index) => (
+                                    <span
+                                      key={`${entry.sha}-${ref}-${index}`}
+                                      className='rounded border border-border bg-muted/40 px-1.5 py-0.5 text-[10px] text-muted-foreground'
+                                      title={ref}
+                                    >
+                                      {ref}
+                                    </span>
+                                  ))}
+                                  {refs.length > 3 && (
+                                    <span
+                                      className='rounded border border-border bg-muted/30 px-1.5 py-0.5 text-[10px] text-muted-foreground'
+                                      title={refs.slice(3).join(', ')}
+                                    >
+                                      +{refs.length - 3} refs
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                             </div>
-                            <div className='mt-1 flex items-center justify-between gap-2 text-[10px] text-muted-foreground'>
-                              <span className='font-mono'>{entry.shortSha}</span>
-                              <span className='truncate' title={entry.authoredAt}>
-                                {formatCommitTimestamp(entry.authoredAt)}
-                              </span>
-                            </div>
-                          </div>
-                        ))
+                          )
+                        })
                       )}
                     </div>
                   </details>
