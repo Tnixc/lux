@@ -11,6 +11,7 @@
     "typecheck": "tsgo -b"
   },
   "dependencies": {
+    "@fontsource/fira-code": "^5.2.7",
     "@hono/node-server": "^1.19.6",
     "@libsql/client": "^0.17.0",
     "@octokit/core": "^7.0.6",
